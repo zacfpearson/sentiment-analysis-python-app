@@ -1,4 +1,4 @@
-# Sentiment Analysis Train
+# SentimentAnalysisTrain
 
 ## Overview
 This application is used to train a network to preform sentiment analysis on any length of text. This [Blog](https://www.curiousily.com/posts/sentiment-analysis-with-tensorflow-2-and-keras-using-python/) was followed and adopted to create this training app. 

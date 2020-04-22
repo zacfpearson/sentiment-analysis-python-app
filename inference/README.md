@@ -16,7 +16,10 @@ From this directory run: `docker build -t sentiment-analysis-python:dev -f docke
 ### Prod
 From this directory run: `docker build -t sentiment-analysis-python:prod -f docker/Dockerfile.prod src`
 
-## Start redis server
+## Start redis
+
+This app depends on a redis server running on the same bridge network with the resovable hostname `sentiment-analysis-broker`. The easiest way to get redis up and runnign is with their Docker image.
+`docker run --network=sentiment-analysis-bridge --name=sentiment-analysis-broker --rm redis:alpine`
 
 ## Development server
 ### Dev

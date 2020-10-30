@@ -4,7 +4,12 @@ COPY . /src
 
 WORKDIR /src
 
-RUN pip3 install --upgrade pip setuptools && \
-    python3 -m pip install numpy tensorflow tensorflow_hub tensorflow_text pyyaml h5py redis
+RUN apt update -y && apt-get install wget -y && \
+    wget https://tfhub.dev/google/universal-sentence-encoder-multilingual/3?tf-hub-format=compressed -O universal-sentence-encoder-multilingual_3.tar.gz && \
+    mkdir /src/universalEncoder && \
+    tar -xzvf universal-sentence-encoder-multilingual_3.tar.gz -C /src/universalEncoder && \
+    pip3 install --upgrade pip setuptools && \
+    python3 -m pip install numpy tensorflow tensorflow_hub tensorflow_text pyyaml h5py redis && \
+    apt-get remove wget -y
 
 CMD ["python3", "predict.py"]

@@ -2,6 +2,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 import re
 import sys
+import json
 
 import tensorflow_hub as hub
 import numpy as np
@@ -21,7 +22,7 @@ def sent(predictedSentiment):
 
 def main():
 
-    use = hub.load("https://tfhub.dev/google/universal-sentence-encoder-multilingual/3")
+    use = hub.load("/src/universalEncoder")
 
     model = keras.models.load_model('my_model.h5')
 
@@ -34,11 +35,14 @@ def main():
     while True:
         message = p.get_message()
         if message:
-            print("recieved data")
-            emb_input = use([str(message['data'])])
-            review_emb_input = tf.reshape(emb_input, [-1]).numpy()
-            predictedSentiment = model.predict(emb_input)
-            r.publish('sentiment-reply', sent(predictedSentiment))
+            print(message)
+            if message["type"] == "message":
+                json_data = json.loads(bytes(message['data']).decode())
+                emb_input = use([str(json_data['post'])])
+                review_emb_input = tf.reshape(emb_input, [-1]).numpy()
+                predictedSentiment = model.predict(emb_input)
+                res_dict = {'clientId':str(json_data['clientId']), 'sentiment': sent(predictedSentiment)}
+                r.publish('sentiment-reply', json.dumps(res_dict))
         time.sleep(0.001)
 
 

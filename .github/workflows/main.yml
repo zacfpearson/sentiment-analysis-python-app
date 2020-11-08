@@ -1,0 +1,26 @@
+on: [push]
+name: Linux_Container_Workflow
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+        # checkout the repo
+        - name: Checkout
+          uses: actions/checkout@v2
+ 
+        - name: Login to DockerHub
+          uses: azure/docker-login@v1
+          with:
+            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+      
+        - name: Build and push
+          uses: docker/build-push-action@v2
+          with:
+            context: src
+            file: docker/Dockerfile.prod
+            load: true
+            tags: ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}
+        - run: docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}

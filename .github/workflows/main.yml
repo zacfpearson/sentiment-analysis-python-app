@@ -19,8 +19,8 @@ jobs:
         - name: Build and push
           uses: docker/build-push-action@v2
           with:
-            context: src
-            file: docker/Dockerfile.prod
+            context: inference/src
+            file: inference/docker/Dockerfile.prod
             load: true
             tags: ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}
         - run: docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}

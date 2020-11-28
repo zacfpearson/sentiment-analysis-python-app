@@ -8,6 +8,8 @@ jobs:
         # checkout the repo
         - name: Checkout
           uses: actions/checkout@v2
+          with:
+           path: main
  
         - name: Login to DockerHub
           uses: azure/docker-login@v1
@@ -16,11 +18,35 @@ jobs:
             username: ${{ secrets.REGISTRY_USERNAME }}
             password: ${{ secrets.REGISTRY_PASSWORD }}
       
-        - name: Build and push
+        - name: Build Image
           uses: docker/build-push-action@v2
           with:
-            context: inference/src
-            file: inference/docker/Dockerfile.prod
+            context: main/inference/src
+            file: main/inference/docker/Dockerfile.prod
             load: true
             tags: ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}
-        - run: docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}
+        - name: Push Image
+          run: docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/sentiment-analysis-inferencer:${{ github.sha }}
+      
+        - uses: actions/checkout@v2
+          with:
+           repository: 'zacfpearson/sentiment-analysis-manifests'
+           token: ${{ secrets.ACTION_TOKEN }}
+           path: sentiment-analysis-manifests
+           fetch-depth: 0
+           
+        - name: Update Manifests
+          run: |
+            cd sentiment-analysis-manifests
+            cat python-deployment.yaml | sed -i "0,/image:.*$/s//image: ${{ secrets.REGISTRY_LOGIN_SERVER }}\/sentiment-analysis-inferencer:${{ github.sha }}/g" python-deployment.yaml
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git commit -am "Bump docker tag"
+            
+        - name: Push Manifest Changes
+          uses: ad-m/github-push-action@master
+          with:
+           github_token: ${{ secrets.ACTION_TOKEN }}
+           directory: 'sentiment-analysis-manifests'
+           repository: 'zacfpearson/sentiment-analysis-manifests'
+           branch: 'main'
